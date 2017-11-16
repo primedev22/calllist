@@ -16,3 +16,6 @@ react-native run-ios
 
 5. Run for Android
 react-native run-android
+
+6. Generate apk release
+https://facebook.github.io/react-native/docs/signed-apk-android.html
