@@ -24,32 +24,36 @@ export default class App extends Component<{}> {
     /// flag is 0 if user haven't done call with that number yet
     /// flag is 1 if user have done call with that number 
     /// flag is 2 if user have remove button
-    this.state = {
-      callList: {
-        "contactlist": [
-            { "name":"Josh", "number":"332-443-2242", "flag": 0},
-            { "name":"Jamie", "number":"222-232-2234", "flag": 0},
-            { "name":"Nancy", "number":"678-332-2234", "flag": 0}
-        ]
-      }
-    }
+    this.state = {callList: [], flagList: []}
   }
 
+  componentDidMount() {
+    fetch('http://s3.amazonaws.com/ppl.bz/contacts2.json')
+    .then((response)=>response.json())
+    .then((responseJson)=>{
+      console.log(responseJson)
+      var flagList = []
+      for(var id in responseJson) {
+        flagList.push( { "flag": 0 } )
+      }
+      this.setState( {callList: responseJson, flagList: flagList} )
+    })
+  }
   onCallButtonTapped( id ) {
-    if( this.state.callList.contactlist[id].flag == 0 ) {
-      RNImmediatePhoneCall.immediatePhoneCall(this.state.callList.contactlist[id].number)
-      var contactlist = this.state.callList.contactlist
+    if( this.state.flagList[id].flag == 0 ) {
+      RNImmediatePhoneCall.immediatePhoneCall(this.state.callList[id].number)
+      var flagList = this.state.flagList
       
-      contactlist[id].flag = 1;
+      flagList[id].flag = 1;
       //console.log( contractlist );
-      this.setState({callList: {contactlist: contactlist}})
-    }else if( this.state.callList.contactlist[id].flag == 1 ) {
-      var contactlist = this.state.callList.contactlist
+      this.setState({flagList: flagList})
+    }else if( this.state.flagList[id].flag == 1 ) {
+      var flagList = this.state.flagList
       this.refs["text"+id].slideOutRight(300).then(
         (endState) => {
           if(endState.finished) {
-            contactlist[id].flag = 2;
-            this.setState({callList: {contactlist: contactlist}})
+            flagList[id].flag = 2;
+            this.setState({flagList: flagList})
           } 
         }
       )
@@ -58,7 +62,7 @@ export default class App extends Component<{}> {
 
   render() {
     var callListField = []
-    var callList = this.state.callList.contactlist
+    var callList = this.state.callList
     const shadowOpt = {
       width: responsiveWidth(100)-60,
       height: 60,
@@ -71,10 +75,10 @@ export default class App extends Component<{}> {
       style: { marginVertical: 5 }
     }
 
-    for( xx in callList ) {
+    for( var xx in callList ) {
       let id = xx
       //console.log(id, callList[id].name)
-      if(callList[id].flag != 2) {
+      if(this.state.flagList[id].flag != 2) {
         callListField.push(
           <Animatable.View ref={"text"+id} key={id} style={styles.callButtonContainer}>
             <BoxShadow setting={shadowOpt}>
