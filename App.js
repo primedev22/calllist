@@ -13,30 +13,47 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { responsiveHeight, responsiveWidth, responsiveFontSize } from 'react-native-responsive-dimensions'
-import Communications from 'react-native-communications'
+import RNImmediatePhoneCall from 'react-native-immediate-phone-call'
 import {BoxShadow} from 'react-native-shadow'
+import * as Animatable from 'react-native-animatable';
 
 export default class App extends Component<{}> {
   
   constructor(props) {
     super(props)
-    
+    /// flag is 0 if user haven't done call with that number yet
+    /// flag is 1 if user have done call with that number 
+    /// flag is 2 if user have remove button
     this.state = {
       callList: {
         "contactlist": [
-            { "name":"Josh", "number":"332-443-2242" },
-            { "name":"Jamie", "number":"222-232-2234" },
-            { "name":"Nancy", "number":"678-332-2234" }
+            { "name":"Josh", "number":"332-443-2242", "flag": 0},
+            { "name":"Jamie", "number":"222-232-2234", "flag": 0},
+            { "name":"Nancy", "number":"678-332-2234", "flag": 0}
         ]
       }
     }
   }
 
   onCallButtonTapped( id ) {
-    Communications.phonecall(this.state.callList.contactlist[id].number, false)
-    contactlist = this.state.callList.contactlist
-    contactlist.splice(id, 1)
-    setTimeout(()=>{this.setState({callList: {contactlist: contactlist}})}, 100)
+    if( this.state.callList.contactlist[id].flag == 0 ) {
+      RNImmediatePhoneCall.immediatePhoneCall(this.state.callList.contactlist[id].number)
+      var contactlist = this.state.callList.contactlist
+      
+      contactlist[id].flag = 1;
+      //console.log( contractlist );
+      this.setState({callList: {contactlist: contactlist}})
+    }else if( this.state.callList.contactlist[id].flag == 1 ) {
+      var contactlist = this.state.callList.contactlist
+      this.refs["text"+id].slideOutRight(300).then(
+        (endState) => {
+          if(endState.finished) {
+            contactlist[id].flag = 2;
+            this.setState({callList: {contactlist: contactlist}})
+          } 
+        }
+      )
+    }
   }
 
   render() {
@@ -53,18 +70,21 @@ export default class App extends Component<{}> {
       y: 3,
       style: { marginVertical: 5 }
     }
+
     for( xx in callList ) {
       let id = xx
       //console.log(id, callList[id].name)
-      callListField.push(
-        <View key={id} style={styles.callButtonContainer}>
-          <BoxShadow setting={shadowOpt}>
-            <TouchableOpacity style={styles.callButton} onPress={()=>this.onCallButtonTapped(id)}>
-              <Text style={styles.callButtonText} >{callList[id].name + " | " + callList[id].number }</Text>
-            </TouchableOpacity>
-          </BoxShadow>
-        </View>
-      )
+      if(callList[id].flag != 2) {
+        callListField.push(
+          <Animatable.View ref={"text"+id} key={id} style={styles.callButtonContainer}>
+            <BoxShadow setting={shadowOpt}>
+              <TouchableOpacity style={styles.callButton} onPress={()=>this.onCallButtonTapped(id)}>
+                <Text style={styles.callButtonText} >{callList[id].name + " | " + callList[id].number }</Text>
+              </TouchableOpacity>
+            </BoxShadow>
+          </Animatable.View>
+        )
+      }
     }
     return (
       <View style={styles.container}>

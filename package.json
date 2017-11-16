@@ -9,10 +9,12 @@
 	"dependencies": {
 		"react": "16.0.0",
 		"react-native": "0.50.3",
-		"react-native-communications": "^2.2.1",
+		"react-native-animatable": "^1.2.4",
+		"react-native-immediate-phone-call": "^1.0.0",
 		"react-native-responsive-dimensions": "^1.0.2",
 		"react-native-shadow": "^1.2.1",
-		"react-native-svg": "^5.5.1"
+		"react-native-svg": "^5.5.1",
+		"react-native-swipeable-view": "^1.1.0"
 	},
 	"devDependencies": {
 		"babel-jest": "21.2.0",
